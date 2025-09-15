@@ -1,24 +1,29 @@
 <?php
 
+<?php
+
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Class DatabaseSeeder
+ *
+ * Lance les seeders de base dans le bon ordre.
+ * - Agencies d'abord
+ * - Trips ensuite (dépend des agences)
+ */
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
-     *
-     * @return void
+     * Exécution des seeders.
      */
-    public function run()
+    public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $this->call([
+            AgencySeeder::class,
+            TripSeeder::class,
+        ]);
     }
 }
+
