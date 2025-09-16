@@ -28,8 +28,16 @@
             @auth <th class="text-end">Actions</th> @endauth
           </tr>
         </thead>
+
         <tbody>
           @forelse($trips as $t)
+            @php
+              $canManage = auth()->check() && (
+                  auth()->id() === $t->author_id ||
+                  (auth()->user()->role ?? 'user') === 'admin'
+              );
+            @endphp
+
             <tr>
               <td>{{ $t->from->name }}</td>
               <td>{{ $t->departure_dt->format('d/m/y') }}</td>
@@ -42,24 +50,37 @@
               @auth
                 <td class="text-end">
                   {{-- Voir : ouvre la fenêtre modale de détails --}}
-                  <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#tripDetails-{{ $t->id }}">
+                  <button class="btn btn-sm btn-light"
+                          data-bs-toggle="modal"
+                          data-bs-target="#tripDetails-{{ $t->id }}"
+                          aria-label="Voir les détails">
                     <i class="bi bi-eye"></i>
                   </button>
 
-                  {{-- Éditer / Supprimer si l'utilisateur est l'auteur (activé quand on ajoutera les routes) --}}
-                  @if(auth()->id() === $t->author_id)
-                    {{-- <a class="btn btn-sm btn-light" href="{{ route('trips.edit', $t) }}"><i class="bi bi-pencil"></i></a> --}}
-                    {{-- <form method="POST" action="{{ route('trips.destroy', $t) }}" class="d-inline" onsubmit="return confirm('Supprimer ce trajet ?')">
+                  {{-- Éditer / Supprimer : auteur du trajet ou admin --}}
+                  @if($canManage)
+                    <a class="btn btn-sm btn-light" href="{{ route('trips.edit', $t) }}" aria-label="Modifier">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+
+                    <form method="POST"
+                          action="{{ route('trips.destroy', $t) }}"
+                          class="d-inline"
+                          onsubmit="return confirm('Supprimer ce trajet ?')">
                       @csrf @method('DELETE')
-                      <button class="btn btn-sm btn-light"><i class="bi bi-trash"></i></button>
-                    </form> --}}
+                      <button class="btn btn-sm btn-light" aria-label="Supprimer">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
                   @endif
                 </td>
               @endauth
             </tr>
           @empty
             <tr>
-              <td colspan="@auth 8 @else 7 @endauth" class="text-center py-5 text-muted">Aucun trajet disponible</td>
+              <td colspan="@auth 8 @else 7 @endauth" class="text-center py-5 text-muted">
+                Aucun trajet disponible
+              </td>
             </tr>
           @endforelse
         </tbody>
