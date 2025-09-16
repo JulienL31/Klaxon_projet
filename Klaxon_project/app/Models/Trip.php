@@ -8,7 +8,7 @@ class Trip extends Model
 {
     protected $fillable = [
         'agency_from_id','agency_to_id','departure_dt','arrival_dt',
-        'seats_total','seats_free','contact_name','contact_email','contact_phone'
+        'seats_total','seats_free','contact_name','contact_email','contact_phone','author_id'
     ];
 
     protected $casts = [

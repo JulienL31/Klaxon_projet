@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TripController;
 
 /* Accueil (public) */
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -14,6 +15,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::middleware('auth')->group(function () {
+    Route::resource('trips', TripController::class)
+        ->only(['create','store','edit','update','destroy']);
+});
 
 /* Debug (local seulement) */
 if (app()->environment('local')) {

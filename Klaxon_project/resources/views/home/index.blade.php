@@ -3,7 +3,6 @@
 @section('title','Accueil')
 @section('pagetitle','Trajets proposés')
 
-{{-- Messages au-dessus du titre (maquette) --}}
 @section('flash')
   @if(session('status'))
     <div class="alert-klx">{{ session('status') }}</div>
@@ -39,34 +38,28 @@
               <td>{{ $t->arrival_dt->format('d/m/y') }}</td>
               <td>{{ $t->arrival_dt->format('H:i') }}</td>
               <td>{{ $t->seats_free }}</td>
+
               @auth
                 <td class="text-end">
-                  {{-- Voir (ouvre la modale de détails) --}}
+                  {{-- Voir : ouvre la fenêtre modale de détails --}}
                   <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#tripDetails-{{ $t->id }}">
                     <i class="bi bi-eye"></i>
                   </button>
 
-                  {{-- Éditer / Supprimer (à activer quand l’auteur est relié) --}}
-                  {{--
-                  @can('update', $t)
-                    <a class="btn btn-sm btn-light" href="{{ route('trips.edit',$t) }}"><i class="bi bi-pencil"></i></a>
-                  @endcan
-                  @can('delete', $t)
-                    <form method="POST" action="{{ route('trips.destroy',$t) }}" class="d-inline"
-                          onsubmit="return confirm('Supprimer ce trajet ?')">
+                  {{-- Éditer / Supprimer si l'utilisateur est l'auteur (activé quand on ajoutera les routes) --}}
+                  @if(auth()->id() === $t->author_id)
+                    {{-- <a class="btn btn-sm btn-light" href="{{ route('trips.edit', $t) }}"><i class="bi bi-pencil"></i></a> --}}
+                    {{-- <form method="POST" action="{{ route('trips.destroy', $t) }}" class="d-inline" onsubmit="return confirm('Supprimer ce trajet ?')">
                       @csrf @method('DELETE')
                       <button class="btn btn-sm btn-light"><i class="bi bi-trash"></i></button>
-                    </form>
-                  @endcan
-                  --}}
+                    </form> --}}
+                  @endif
                 </td>
               @endauth
             </tr>
           @empty
             <tr>
-              <td colspan="@auth 8 @else 7 @endauth" class="text-center py-5 text-muted">
-                Aucun trajet disponible
-              </td>
+              <td colspan="@auth 8 @else 7 @endauth" class="text-center py-5 text-muted">Aucun trajet disponible</td>
             </tr>
           @endforelse
         </tbody>
@@ -76,7 +69,7 @@
 @endsection
 
 @push('modals')
-  {{-- Une modale de détails par trajet (affichée quand connecté) --}}
+  {{-- Modales de détails (affichées uniquement si connecté) --}}
   @auth
     @foreach($trips as $t)
       <div class="modal fade" id="tripDetails-{{ $t->id }}" tabindex="-1" aria-hidden="true">
