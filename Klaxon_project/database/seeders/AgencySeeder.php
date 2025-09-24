@@ -9,8 +9,9 @@ class AgencySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Paris','Lyon','Toulouse','Lille','Nantes'] as $name) {
-            Agency::firstOrCreate(['name' => $name]);
+        $names = ['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Nantes', 'Lille', 'Toulouse'];
+        foreach ($names as $n) {
+            Agency::firstOrCreate(['name' => $n]);
         }
     }
 }

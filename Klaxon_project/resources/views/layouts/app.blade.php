@@ -11,6 +11,7 @@
   <div class="container py-3">
     @include('partials.header')
     @yield('flash')
+    @includeIf('partials.flash')
     <h1 class="page-title">@yield('pagetitle','')</h1>
     @yield('content')
     @include('partials.footer')

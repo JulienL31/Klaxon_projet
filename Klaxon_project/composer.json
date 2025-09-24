@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.7"
     },
     "require-dev": {
+        "doctrine/dbal": "^3.10",
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.0.1",
@@ -47,7 +48,13 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+
+        "test": "php artisan test",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "stan": "@phpstan",
+        "lint": "vendor/bin/pint -v",
+        "fix": "vendor/bin/pint -v"
     },
     "extra": {
         "laravel": {

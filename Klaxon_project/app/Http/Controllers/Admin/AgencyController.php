@@ -2,47 +2,59 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use Illuminate\Http\Request;
 
 class AgencyController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $agencies = Agency::orderBy('name')->get();
+        $agencies = Agency::all();
         return view('admin.agencies.index', compact('agencies'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('admin.agencies.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate(['name' => ['required','string','max:100','unique:agencies,name']]);
-        Agency::create($data);
-        return redirect()->route('admin.agencies.index')->with('status','Agence créée.');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:agencies,name',
+        ]);
+
+        Agency::create($validated);
+
+        return redirect()->route('admin.agencies.index')
+            ->with('success', 'Agence créée avec succès.');
     }
 
-    public function edit(Agency $agency)
+    public function edit(Agency $agency): View
     {
         return view('admin.agencies.edit', compact('agency'));
     }
 
-    public function update(Request $request, Agency $agency)
+    public function update(Request $request, Agency $agency): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required','string','max:100','unique:agencies,name,'.$agency->id],
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:agencies,name,' . $agency->id,
         ]);
-        $agency->update($data);
-        return redirect()->route('admin.agencies.index')->with('status','Agence mise à jour.');
+
+        $agency->update($validated);
+
+        return redirect()->route('admin.agencies.index')
+            ->with('success', 'Agence mise à jour avec succès.');
     }
 
-    public function destroy(Agency $agency)
+    public function destroy(Agency $agency): RedirectResponse
     {
         $agency->delete();
-        return redirect()->route('admin.agencies.index')->with('status','Agence supprimée.');
+
+        return redirect()->route('admin.agencies.index')
+            ->with('success', 'Agence supprimée avec succès.');
     }
 }

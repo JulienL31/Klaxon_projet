@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
 use App\Models\Trip;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $trips = Trip::with(['from', 'to'])
-            ->where('departure_dt', '>', now())   // trajets futurs
-            ->where('seats_free', '>', 0)         // places restantes
-            ->orderBy('departure_dt', 'asc')
+            ->upcoming()
+            ->withFreeSeats()
+            ->ordered()
             ->get();
 
-        return view('home.index', compact('trips'));
+        return view('home', compact('trips'));
     }
 }

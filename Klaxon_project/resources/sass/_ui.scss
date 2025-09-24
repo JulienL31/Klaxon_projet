@@ -1,0 +1,39 @@
+.navbar-klx {
+  padding: .5rem 1rem;
+}
+
+.btn-chip {
+  border: 2px solid #000;
+  border-radius: 9999px;
+  padding: .5rem 1rem;
+  line-height: 1;
+  font-weight: 600;
+  transition: transform .06s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
+
+  &.dark {
+    background: #000;
+    color: #fff;
+    &:hover, &:focus { background:#111; border-color:#111; transform: translateY(-1px); }
+  }
+
+  &.gray {
+    background: #f3f3f3;
+    color: #111;
+    &:hover, &:focus { background:#e8e8e8; transform: translateY(-1px); }
+  }
+}
+
+.alert-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #000;
+  border-radius: 9999px;
+  padding: .5rem 1rem;
+  background: #f3f4f6;
+  color: #111;
+  font-weight: 600;
+}
+
+.auth-wrapper { min-height: calc(100vh - 72px); padding: 1.5rem; background: #f6f7f9; }
+.auth-card    { width: 100%; max-width: 520px; border: 2px solid #000; border-radius: 1rem; }
+.table-box    { background:#fff; border:1px solid #e3e3e3; border-radius:.75rem; padding:1rem; }

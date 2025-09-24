@@ -2,141 +2,106 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Trip;
 use App\Models\Agency;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class TripController extends Controller
 {
-    /**
-     * Formulaire de création d'un trajet.
-     */
-    public function create()
+    public function create(): View
     {
-        $agencies = Agency::orderBy('name')->get();
-
+        $agencies = Agency::all();
         return view('trips.create', compact('agencies'));
     }
 
-    /**
-     * Enregistre un nouveau trajet.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'agency_from_id' => ['required', 'exists:agencies,id'],
-            'agency_to_id'   => ['required', 'different:agency_from_id', 'exists:agencies,id'],
-            'departure_date' => ['required', 'date'],
-            'departure_time' => ['required'],
-            'arrival_date'   => ['required', 'date'],
-            'arrival_time'   => ['required'],
-            'seats_total'    => ['required', 'integer', 'min:1'],
-            'seats_free'     => ['required', 'integer', 'min:0', 'lte:seats_total'],
+        $validated = $request->validate([
+            'agency_from_id' => 'required|exists:agencies,id',
+            'agency_to_id'   => 'required|exists:agencies,id|different:agency_from_id',
+            'departure_date' => 'required|date',
+            'departure_time' => 'required|date_format:H:i',
+            'arrival_date'   => 'required|date|after_or_equal:departure_date',
+            'arrival_time'   => 'required|date_format:H:i',
+            'seats_total'    => 'required|integer|min:1',
+            'seats_free'     => 'required|integer|min:0|max:' . $request->seats_total,
         ]);
 
-        $departure = Carbon::parse($data['departure_date'].' '.$data['departure_time']);
-        $arrival   = Carbon::parse($data['arrival_date'].' '.$data['arrival_time']);
-
-        if ($arrival->lte($departure)) {
-            return back()
-                ->withErrors(['arrival_date' => 'On ne peut pas arriver avant de partir.'])
-                ->withInput();
-        }
-
-        $user = auth()->user();
+        $departure = $validated['departure_date'] . ' ' . $validated['departure_time'];
+        $arrival   = $validated['arrival_date'] . ' ' . $validated['arrival_time'];
 
         Trip::create([
-            'agency_from_id' => $data['agency_from_id'],
-            'agency_to_id'   => $data['agency_to_id'],
-            'departure_dt'   => $departure,
-            'arrival_dt'     => $arrival,
-            'seats_total'    => $data['seats_total'],
-            'seats_free'     => $data['seats_free'],
-            'contact_name'   => $user->name,
-            'contact_email'  => $user->email,
-            'contact_phone'  => $user->phone ?? null,
-            'author_id'      => $user->id,
+            'agency_from_id' => $validated['agency_from_id'],
+            'agency_to_id'   => $validated['agency_to_id'],
+            'departure_at'   => $departure,
+            'arrival_at'     => $arrival,
+            'seats_total'    => $validated['seats_total'],
+            'seats_free'     => $validated['seats_free'],
+            'author_id'      => Auth::id(),
         ]);
 
-        return redirect()->route('home')->with('status', 'Le trajet a été créé.');
+        return redirect()->route('home')
+            ->with('success', 'Trajet créé avec succès.');
     }
 
-    /**
-     * Formulaire d'édition (réservé à l'auteur ou à un admin).
-     */
-    public function edit(Trip $trip)
+    public function edit(Trip $trip): View
     {
         $this->authorizeAuthorOrAdmin($trip);
 
-        $agencies = Agency::orderBy('name')->get();
-
+        $agencies = Agency::all();
         return view('trips.edit', compact('trip', 'agencies'));
     }
 
-    /**
-     * Met à jour un trajet (réservé à l'auteur ou à un admin).
-     */
-    public function update(Request $request, Trip $trip)
+    public function update(Request $request, Trip $trip): RedirectResponse
     {
         $this->authorizeAuthorOrAdmin($trip);
 
-        $data = $request->validate([
-            'agency_from_id' => ['required', 'exists:agencies,id'],
-            'agency_to_id'   => ['required', 'different:agency_from_id', 'exists:agencies,id'],
-            'departure_date' => ['required', 'date'],
-            'departure_time' => ['required'],
-            'arrival_date'   => ['required', 'date'],
-            'arrival_time'   => ['required'],
-            'seats_total'    => ['required', 'integer', 'min:1'],
-            'seats_free'     => ['required', 'integer', 'min:0', 'lte:seats_total'],
+        $validated = $request->validate([
+            'agency_from_id' => 'required|exists:agencies,id',
+            'agency_to_id'   => 'required|exists:agencies,id|different:agency_from_id',
+            'departure_date' => 'required|date',
+            'departure_time' => 'required|date_format:H:i',
+            'arrival_date'   => 'required|date|after_or_equal:departure_date',
+            'arrival_time'   => 'required|date_format:H:i',
+            'seats_total'    => 'required|integer|min:1',
+            'seats_free'     => 'required|integer|min:0|max:' . $request->seats_total,
         ]);
 
-        $departure = Carbon::parse($data['departure_date'].' '.$data['departure_time']);
-        $arrival   = Carbon::parse($data['arrival_date'].' '.$data['arrival_time']);
-
-        if ($arrival->lte($departure)) {
-            return back()
-                ->withErrors(['arrival_date' => 'On ne peut pas arriver avant de partir.'])
-                ->withInput();
-        }
+        $departure = $validated['departure_date'] . ' ' . $validated['departure_time'];
+        $arrival   = $validated['arrival_date'] . ' ' . $validated['arrival_time'];
 
         $trip->update([
-            'agency_from_id' => $data['agency_from_id'],
-            'agency_to_id'   => $data['agency_to_id'],
-            'departure_dt'   => $departure,
-            'arrival_dt'     => $arrival,
-            'seats_total'    => $data['seats_total'],
-            'seats_free'     => $data['seats_free'],
+            'agency_from_id' => $validated['agency_from_id'],
+            'agency_to_id'   => $validated['agency_to_id'],
+            'departure_at'   => $departure,
+            'arrival_at'     => $arrival,
+            'seats_total'    => $validated['seats_total'],
+            'seats_free'     => $validated['seats_free'],
         ]);
 
-        return redirect()->route('home')->with('status', 'Le trajet a été modifié.');
+        return redirect()->route('home')
+            ->with('success', 'Trajet mis à jour avec succès.');
     }
 
-    /**
-     * Supprime un trajet (réservé à l'auteur ou à un admin).
-     */
-    public function destroy(Trip $trip)
+    public function destroy(Trip $trip): RedirectResponse
     {
         $this->authorizeAuthorOrAdmin($trip);
 
         $trip->delete();
 
-        return redirect()->route('home')->with('status', 'Le trajet a été supprimé.');
+        return redirect()->route('home')
+            ->with('success', 'Trajet supprimé avec succès.');
     }
 
-    /**
-     * Autorise l'auteur du trajet ou un admin.
-     */
     private function authorizeAuthorOrAdmin(Trip $trip): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
-        $isAuthor = $user && $user->id === $trip->author_id;
-        $isAdmin  = $user && (($user->role ?? 'user') === 'admin');
-
-        if (!($isAuthor || $isAdmin)) {
-            abort(403);
+        if ($user->role !== 'admin' && $trip->author_id !== $user->id) {
+            abort(403, 'Non autorisé.');
         }
     }
 }

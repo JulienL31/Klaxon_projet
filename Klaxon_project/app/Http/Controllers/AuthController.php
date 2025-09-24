@@ -2,28 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /** Affiche le formulaire de connexion */
-    public function show()
+    public function show(): View
     {
         return view('auth.login');
     }
 
-    /** Traite la connexion */
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('home')->with('status', 'Connexion réussie.');
+
+            return redirect()->intended(route('home'))
+                ->with('success', 'Connexion réussie.');
         }
 
         return back()->withErrors([
@@ -31,13 +33,14 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
-    /** Déconnecte l’utilisateur */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('status', 'Déconnecté.');
+        return redirect()->route('home')
+            ->with('success', 'Déconnexion réussie.');
     }
 }
