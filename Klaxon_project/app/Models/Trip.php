@@ -19,6 +19,11 @@ class Trip extends Model
         'seats_total',
         'seats_free',
         'author_id',
+
+        // ⬇️ pour la modale "détails" et la fiche trajet
+        'contact_name',
+        'contact_email',
+        'contact_phone',
     ];
 
     protected $casts = [

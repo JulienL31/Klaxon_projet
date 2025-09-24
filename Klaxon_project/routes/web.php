@@ -17,11 +17,12 @@ use App\Http\Controllers\Admin\TripController   as AdminTripController;
 | - Accueil public : trajets futurs avec places > 0
 | - Auth : login (GET/POST) + logout (POST)
 | - Trips (CRUD partiel) : créer / éditer / supprimer (auth requis)
+| - Admin : dashboard, users, agencies (CRUD), trips (index + delete)
 | - Debug : /__debug accessible uniquement en environnement local
 |--------------------------------------------------------------------------
 */
 
-// Accueil
+// Accueil (liste publique)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Auth
@@ -33,13 +34,19 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Trips (utilisateur connecté)
+// Trajets - utilisateur connecté (création / édition / suppression)
 Route::middleware('auth')->group(function () {
     Route::resource('trips', TripController::class)
         ->only(['create', 'store', 'edit', 'update', 'destroy']);
-    // Noms générés : trips.create, trips.store, trips.edit, trips.update, trips.destroy
+    // Noms générés :
+    //  - trips.create   GET    /trips/create
+    //  - trips.store    POST   /trips
+    //  - trips.edit     GET    /trips/{trip}/edit
+    //  - trips.update   PUT    /trips/{trip}
+    //  - trips.destroy  DELETE /trips/{trip}
 });
 
+// Espace Admin
 Route::middleware(['auth','can:admin'])
     ->prefix('admin')
     ->as('admin.')
@@ -55,8 +62,13 @@ Route::middleware(['auth','can:admin'])
         // Trajets (liste + suppression)
         Route::get('/trips', [AdminTripController::class, 'index'])->name('trips.index');
         Route::delete('/trips/{trip}', [AdminTripController::class, 'destroy'])->name('trips.destroy');
+
+        // 👉 Ajout : URL conviviale /admin/trips/create
+        // Redirige simplement vers la création standard /trips/create
+        Route::get('/trips/create', fn () => redirect()->route('trips.create'))
+            ->name('trips.create');
     });
-    
+
 // Debug (local seulement)
 if (app()->environment('local')) {
     Route::get('/__debug', function () {

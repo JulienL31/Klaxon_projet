@@ -3,12 +3,11 @@
 @section('title','Accueil')
 @section('pagetitle','Trajets proposés')
 
-{{-- Ici on NE ré-affiche PAS session("status") (géré globalement dans le layout) --}}
+{{-- Flash local : seulement l’info de connexion pour les visiteurs.
+    Les autres flashs (status) sont gérés globalement dans le layout. --}}
 @section('flash')
   @guest
-    <div class="alert-klx">
-      Pour obtenir plus d'informations sur un trajet, veuillez vous connecter
-    </div>
+    <div class="alert-klx">Pour obtenir plus d'informations sur un trajet, veuillez vous connecter</div>
   @endguest
 @endsection
 
@@ -33,23 +32,22 @@
           @forelse($trips as $t)
             @php
               $canManage = auth()->check() && (
-                auth()->id() === $t->author_id ||
-                (auth()->user()->role ?? 'user') === 'admin'
+                  auth()->id() === $t->author_id ||
+                  (auth()->user()->role ?? 'user') === 'admin'
               );
             @endphp
 
             <tr>
               <td>{{ $t->from?->name ?? '—' }}</td>
-              <td>{{ $t->departure_dt?->format('d/m/y') ?? '—' }}</td>
-              <td>{{ $t->departure_dt?->format('H:i') ?? '—' }}</td>
+              <td>{{ $t->departure_at?->format('d/m/y') ?? '—' }}</td>
+              <td>{{ $t->departure_at?->format('H:i') ?? '—' }}</td>
               <td>{{ $t->to?->name ?? '—' }}</td>
-              <td>{{ $t->arrival_dt?->format('d/m/y') ?? '—' }}</td>
-              <td>{{ $t->arrival_dt?->format('H:i') ?? '—' }}</td>
+              <td>{{ $t->arrival_at?->format('d/m/y') ?? '—' }}</td>
+              <td>{{ $t->arrival_at?->format('H:i') ?? '—' }}</td>
               <td>{{ $t->seats_free ?? 0 }}</td>
 
               @auth
                 <td class="text-end">
-                  {{-- Voir (modale) --}}
                   <button class="btn btn-sm btn-light"
                           data-bs-toggle="modal"
                           data-bs-target="#tripDetails-{{ $t->id }}"
@@ -57,7 +55,6 @@
                     <i class="bi bi-eye"></i>
                   </button>
 
-                  {{-- Éditer / Supprimer : auteur ou admin --}}
                   @if($canManage)
                     <a class="btn btn-sm btn-light" href="{{ route('trips.edit', $t) }}" aria-label="Modifier">
                       <i class="bi bi-pencil"></i>

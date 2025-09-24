@@ -1,16 +1,22 @@
 @extends('layouts.app')
+
 @section('title','Créer une agence')
 @section('pagetitle','Créer une agence')
 
 @section('content')
-  <form method="POST" action="{{ route('admin.agencies.store') }}" class="bg-white p-3 p-md-4 border rounded-3" style="max-width:520px">
+  <form method="POST" action="{{ route('admin.agencies.store') }}" class="bg-white p-3 border rounded-3" novalidate>
     @csrf
+
     <div class="mb-3">
-      <label class="form-label">Nom</label>
-      <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
-      @error('name') <div class="text-danger small">{{ $message }}</div> @enderror
+      <label class="form-label">Nom de l’agence</label>
+      <input type="text" name="name" value="{{ old('name') }}"
+             class="form-control @error('name') is-invalid @enderror" required maxlength="100">
+      @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
-    <button class="btn btn-primary">Enregistrer</button>
-    <a class="btn btn-outline-secondary" href="{{ route('admin.agencies.index') }}">Annuler</a>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary">Enregistrer</button>
+      <a href="{{ route('admin.agencies.index') }}" class="btn btn-outline-secondary">Annuler</a>
+    </div>
   </form>
 @endsection
