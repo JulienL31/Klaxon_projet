@@ -55,7 +55,7 @@
                           data-bs-toggle="modal"
                           data-bs-target="#tripDetailsModal"
                           data-author="{{ $t->contact_name ?? $t->author?->name }}"
-                          data-phone="{{ $t->contact_phone ?? $t->author?->phone }}"
+                          data-phone="{{ $t->contact_phone ?? $t->author?->phone_pretty }}"
                           data-email="{{ $t->contact_email ?? $t->author?->email }}"
                           data-seats="{{ $t->seats_total }}"
                           aria-label="Voir les détails">

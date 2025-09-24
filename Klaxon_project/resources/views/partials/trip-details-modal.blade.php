@@ -1,12 +1,10 @@
-@php
-  // Peut-on afficher les coordonnées en clair ?
-  $canSee = auth()->check();
-@endphp
+@php($canSee = auth()->check())
 
 <div class="modal fade"
      id="tripDetailsModal"
-     data-can-see="{{ $canSee ? '1' : '0' }}"
-     tabindex="-1" aria-hidden="true">
+     tabindex="-1"
+     aria-hidden="true"
+     data-can-see="{{ $canSee ? 1 : 0 }}">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -33,37 +31,3 @@
     </div>
   </div>
 </div>
-
-{{-- Script de remplissage de la modale (vanilla JS + Bootstrap) --}}
-<script>
-(function () {
-  const modalEl = document.getElementById('tripDetailsModal');
-  const canSee = modalEl?.dataset?.canSee === '1';
-
-  // Petites fonctions de masquage pour les invités
-  function maskName(v){ if(!v) return '—'; return v.replace(/\S/g,'x'); }
-  function maskPhone(v){ if(!v) return '—'; return v.replace(/\d/g,'X'); }
-  function maskEmail(v){
-    if(!v) return '—';
-    const parts = String(v).split('@');
-    const u = parts[0] ?? '', d = parts[1] ?? '';
-    const mask = s => s ? s.replace(/\S/g,'x') : '';
-    return (mask(u) || 'xxxx') + '@' + (mask(d) || 'xxxx.xx');
-  }
-
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.btn-trip-details');
-    if(!btn) return;
-
-    const author = btn.getAttribute('data-author') || '';
-    const phone  = btn.getAttribute('data-phone')  || '';
-    const email  = btn.getAttribute('data-email')  || '';
-    const seats  = btn.getAttribute('data-seats')  || '';
-
-    document.getElementById('tdAuthor').textContent = canSee ? (author || '—') : maskName(author);
-    document.getElementById('tdPhone').textContent  = canSee ? (phone  || '—') : maskPhone(phone);
-    document.getElementById('tdEmail').textContent  = canSee ? (email  || '—') : maskEmail(email);
-    document.getElementById('tdSeats').textContent  = seats || '—';
-  }, {capture: true});
-})();
-</script>

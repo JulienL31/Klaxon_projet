@@ -102,7 +102,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Petit rappel en console
+        // Petit rappel en console (perso)
         $this->command?->info('Comptes de connexion:');
         $this->command?->line(' - Admin  -> admin@example.com / password');
         $this->command?->line(' - User   -> jean.dupont@example.com / password');
