@@ -4,11 +4,7 @@
 @section('pagetitle','Créer un trajet')
 
 @section('content')
-  {{-- Messages éventuels --}}
-  @if (session('status'))
-    <div class="alert-klx mb-3">{{ session('status') }}</div>
-  @endif
-
+  {{-- Erreurs globales (liste courte) --}}
   @if ($errors->any())
     <div class="alert-klx mb-3">
       <strong>Veuillez corriger les erreurs ci-dessous.</strong>
@@ -17,7 +13,7 @@
 
   <div class="row g-4">
     <div class="col-md-7">
-      <form method="POST" action="{{ route('trips.store') }}" class="bg-white p-3 p-md-4 border rounded-3">
+      <form method="POST" action="{{ route('trips.store') }}" class="bg-white p-3 p-md-4 border rounded-3" novalidate>
         @csrf
 
         <div class="row g-3">
@@ -86,6 +82,7 @@
             <input id="seats_free" type="number" min="0" step="1" name="seats_free" class="form-control"
                    value="{{ old('seats_free', 1) }}" required>
             @error('seats_free') <div class="text-danger small">{{ $message }}</div> @enderror
+            <div class="form-text">Ne peut pas dépasser le nombre total de places.</div>
           </div>
         </div>
 
@@ -102,9 +99,48 @@
         <h6 class="mb-3">Vos informations</h6>
         <p class="mb-1"><strong>Nom :</strong> {{ auth()->user()->name }}</p>
         <p class="mb-1"><strong>Email :</strong> {{ auth()->user()->email }}</p>
-        <p class="mb-0"><strong>Téléphone :</strong> {{ auth()->user()->phone ?? '—' }}</p>
-        <small class="text-muted d-block mt-2">Ces informations seront utilisées comme contact du trajet.</small>
+        {{-- 👉 Seul changement : téléphone formaté si disponible --}}
+        <p class="mb-0"><strong>Téléphone :</strong> {{ auth()->user()->phone_pretty ?? '—' }}</p>
+        <small class="text-muted d-block mt-2">
+          Ces informations seront associées au trajet pour faciliter le contact.
+        </small>
       </div>
     </div>
   </div>
+
+  {{-- JS léger : cohérence seats_free <= seats_total + arrivée pas avant départ --}}
+  <script>
+    (function () {
+      const total = document.getElementById('seats_total');
+      const free  = document.getElementById('seats_free');
+      const depD  = document.getElementById('departure_date');
+      const arrD  = document.getElementById('arrival_date');
+
+      function syncSeats() {
+        const max = parseInt(total.value || '0', 10);
+        if (Number.isFinite(max) && max > 0) {
+          free.max = String(max);
+          if (parseInt(free.value || '0', 10) > max) free.value = max;
+        } else {
+          free.removeAttribute('max');
+        }
+      }
+
+      function syncArrivalMin() {
+        if (depD.value) {
+          arrD.min = depD.value;
+          if (arrD.value && arrD.value < depD.value) arrD.value = depD.value;
+        } else {
+          arrD.removeAttribute('min');
+        }
+      }
+
+      total?.addEventListener('input', syncSeats);
+      depD?.addEventListener('change', syncArrivalMin);
+
+      // init
+      syncSeats();
+      syncArrivalMin();
+    })();
+  </script>
 @endsection

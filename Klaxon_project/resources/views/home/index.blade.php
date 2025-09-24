@@ -3,11 +3,12 @@
 @section('title','Accueil')
 @section('pagetitle','Trajets proposés')
 
-{{-- Flash local : seulement l’info de connexion pour les visiteurs.
-    Les autres flashs (status) sont gérés globalement dans le layout. --}}
+{{-- Message page spécifique (on ne réaffiche pas session("status") ici) --}}
 @section('flash')
   @guest
-    <div class="alert-klx">Pour obtenir plus d'informations sur un trajet, veuillez vous connecter</div>
+    <div class="alert-klx">
+      Pour obtenir plus d'informations sur un trajet, veuillez vous connecter
+    </div>
   @endguest
 @endsection
 
@@ -32,8 +33,8 @@
           @forelse($trips as $t)
             @php
               $canManage = auth()->check() && (
-                  auth()->id() === $t->author_id ||
-                  (auth()->user()->role ?? 'user') === 'admin'
+                (auth()->user()->role ?? 'user') === 'admin' ||
+                auth()->id() === $t->author_id
               );
             @endphp
 
@@ -44,13 +45,19 @@
               <td>{{ $t->to?->name ?? '—' }}</td>
               <td>{{ $t->arrival_at?->format('d/m/y') ?? '—' }}</td>
               <td>{{ $t->arrival_at?->format('H:i') ?? '—' }}</td>
-              <td>{{ $t->seats_free ?? 0 }}</td>
+              <td>{{ $t->seats_free }}</td>
 
               @auth
                 <td class="text-end">
-                  <button class="btn btn-sm btn-light"
+                  {{-- Voir (popup) --}}
+                  <button type="button"
+                          class="btn btn-sm btn-light btn-trip-details"
                           data-bs-toggle="modal"
-                          data-bs-target="#tripDetails-{{ $t->id }}"
+                          data-bs-target="#tripDetailsModal"
+                          data-author="{{ $t->contact_name ?? $t->author?->name }}"
+                          data-phone="{{ $t->contact_phone ?? $t->author?->phone }}"
+                          data-email="{{ $t->contact_email ?? $t->author?->email }}"
+                          data-seats="{{ $t->seats_total }}"
                           aria-label="Voir les détails">
                     <i class="bi bi-eye"></i>
                   </button>
@@ -75,7 +82,8 @@
             </tr>
           @empty
             <tr>
-              <td colspan="@auth 8 @else 7 @endauth" class="text-center py-5 text-muted">
+              <td colspan="@auth 8 @else 7 @endauth"
+                  class="text-center py-5 text-muted">
                 Aucun trajet disponible
               </td>
             </tr>
@@ -87,27 +95,5 @@
 @endsection
 
 @push('modals')
-  @auth
-    @foreach($trips as $t)
-      <div class="modal fade" id="tripDetails-{{ $t->id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Détails du trajet</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-              <p><strong>Auteur :</strong> {{ $t->contact_name ?? $t->author?->name ?? '—' }}</p>
-              <p><strong>Téléphone :</strong> {{ $t->contact_phone ?? '—' }}</p>
-              <p><strong>Email :</strong> {{ $t->contact_email ?? '—' }}</p>
-              <p><strong>Nombre total de places :</strong> {{ $t->seats_total ?? '—' }}</p>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    @endforeach
-  @endauth
+  @include('partials.trip-details-modal')
 @endpush
