@@ -10,23 +10,28 @@
       <table class="table align-middle mb-0">
         <thead>
           <tr>
-            <th>Départ</th><th>Date</th><th>Heure</th>
-            <th>Destination</th><th>Date</th><th>Heure</th>
-            <th>Places (libres/total)</th><th>Auteur</th>
+            <th>Départ</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Destination</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Places (libres/total)</th>
+            <th>Auteur</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           @forelse($trips as $t)
             <tr>
-              <td>{{ $t->from->name }}</td>
-              <td>{{ $t->departure_dt->format('d/m/y') }}</td>
-              <td>{{ $t->departure_dt->format('H:i') }}</td>
-              <td>{{ $t->to->name }}</td>
-              <td>{{ $t->arrival_dt->format('d/m/y') }}</td>
-              <td>{{ $t->arrival_dt->format('H:i') }}</td>
-              <td>{{ $t->seats_free }} / {{ $t->seats_total }}</td>
-              <td>{{ $t->author->name ?? $t->contact_name }}</td>
+              <td>{{ $t->from?->name ?? '—' }}</td>
+              <td>{{ $t->departure_dt?->format('d/m/y') ?? '—' }}</td>
+              <td>{{ $t->departure_dt?->format('H:i') ?? '—' }}</td>
+              <td>{{ $t->to?->name ?? '—' }}</td>
+              <td>{{ $t->arrival_dt?->format('d/m/y') ?? '—' }}</td>
+              <td>{{ $t->arrival_dt?->format('H:i') ?? '—' }}</td>
+              <td>{{ ($t->seats_free ?? 0) }} / {{ ($t->seats_total ?? 0) }}</td>
+              <td>{{ $t->author?->name ?? $t->contact_name ?? '—' }}</td>
               <td class="text-end">
                 <form method="POST" action="{{ route('admin.trips.destroy',$t) }}"
                       onsubmit="return confirm('Supprimer ce trajet ?')" class="d-inline">
