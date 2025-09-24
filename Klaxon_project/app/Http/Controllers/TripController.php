@@ -7,8 +7,8 @@ use App\Models\Trip;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TripController extends Controller
 {
@@ -36,23 +36,21 @@ class TripController extends Controller
             'seats_free'     => ['required','integer','min:0','lte:seats_total'],
         ]);
 
-        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])->seconds(0);
-        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])->seconds(0);
+        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])
+            ->startOfMinute();
+        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])
+            ->startOfMinute();
 
         $user = Auth::user();
 
         Trip::create([
             'agency_from_id' => $validated['agency_from_id'],
             'agency_to_id'   => $validated['agency_to_id'],
-            // ⬇️ Alignement avec la BDD
             'departure_at'   => $departure,
             'arrival_at'     => $arrival,
             'seats_total'    => $validated['seats_total'],
             'seats_free'     => $validated['seats_free'],
             'author_id'      => $user->id,
-            'contact_name'   => $user->name ?? null,
-            'contact_email'  => $user->email ?? null,
-            'contact_phone'  => $user->phone ?? null,
         ]);
 
         return redirect()->route('home')->with('status', 'Trajet créé avec succès.');
@@ -80,13 +78,14 @@ class TripController extends Controller
             'seats_free'     => ['required','integer','min:0','lte:seats_total'],
         ]);
 
-        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])->seconds(0);
-        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])->seconds(0);
+        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])
+            ->startOfMinute();
+        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])
+            ->startOfMinute();
 
         $trip->update([
             'agency_from_id' => $validated['agency_from_id'],
             'agency_to_id'   => $validated['agency_to_id'],
-            // ⬇️ Alignement avec la BDD
             'departure_at'   => $departure,
             'arrival_at'     => $arrival,
             'seats_total'    => $validated['seats_total'],
