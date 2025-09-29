@@ -2,21 +2,42 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Modèle Agency (agence / ville).
+ *
+ * @property int    $id
+ * @property string $name
+ *
+ * @property-read \Illuminate\Support\Collection<int, Trip> $tripsFrom
+ * @property-read \Illuminate\Support\Collection<int, Trip> $tripsTo
+ */
 class Agency extends Model
 {
+    use HasFactory;
+
+    /** @var array<int, string> */
     protected $fillable = ['name'];
 
-    /** @return HasMany<Trip> */
-    public function departingTrips(): HasMany
+    /**
+     * Trajets partant de cette agence.
+     *
+     * @return HasMany<Trip>
+     */
+    public function tripsFrom(): HasMany
     {
         return $this->hasMany(Trip::class, 'agency_from_id');
     }
 
-    /** @return HasMany<Trip> */
-    public function arrivingTrips(): HasMany
+    /**
+     * Trajets arrivant à cette agence.
+     *
+     * @return HasMany<Trip>
+     */
+    public function tripsTo(): HasMany
     {
         return $this->hasMany(Trip::class, 'agency_to_id');
     }

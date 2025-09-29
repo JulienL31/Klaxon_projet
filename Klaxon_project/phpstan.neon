@@ -2,10 +2,16 @@ includes:
   - vendor/nunomaduro/larastan/extension.neon
 
 parameters:
+  level: 6
   paths:
     - app
-  level: 6
-
-  # (Optionnel) si tu veux ignorer le typage des valeurs de tableaux pour l'instant, dé-commente:
-  # ignoreErrors:
-  #   - identifier: missingType.iterableValue
+  tmpDir: storage/framework/cache/phpstan
+  checkMissingIterableValueType: false
+  checkGenericClassInNonGenericObjectType: false
+  larastan:
+    inferModelRelations: true
+  excludePaths:
+    - database/*
+    - bootstrap/*
+    - storage/*
+    - vendor/*
