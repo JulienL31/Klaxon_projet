@@ -9,24 +9,24 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * CRUD des agences pour l'administrateur.
+ * CRUD des agences (admin).
  */
 class AgencyController extends Controller
 {
     /**
-     * Liste les agences.
+     * Liste des agences (paginée).
      *
      * @return View
      */
     public function index(): View
     {
-        $agencies = Agency::orderBy('name')->paginate(20);
+        $agencies = Agency::query()->orderBy('name')->paginate(20);
 
         return view('admin.agencies.index', compact('agencies'));
     }
 
     /**
-     * Formulaire de création d'une agence.
+     * Formulaire de création.
      *
      * @return View
      */
@@ -36,7 +36,7 @@ class AgencyController extends Controller
     }
 
     /**
-     * Enregistre une nouvelle agence.
+     * Enregistrement d'une agence.
      *
      * @param  Request  $request
      * @return RedirectResponse
@@ -44,16 +44,16 @@ class AgencyController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required','string','max:100','unique:agencies,name'],
+            'name' => ['required', 'string', 'max:100', 'unique:agencies,name'],
         ]);
 
-        Agency::create($data);
+        Agency::query()->create($data);
 
         return redirect()->route('admin.agencies.index')->with('status', 'Agence créée.');
     }
 
     /**
-     * Formulaire d'édition d'une agence.
+     * Formulaire d'édition.
      *
      * @param  Agency  $agency
      * @return View
@@ -64,7 +64,7 @@ class AgencyController extends Controller
     }
 
     /**
-     * Met à jour une agence.
+     * Mise à jour.
      *
      * @param  Request  $request
      * @param  Agency   $agency
@@ -73,7 +73,7 @@ class AgencyController extends Controller
     public function update(Request $request, Agency $agency): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required','string','max:100','unique:agencies,name,'.$agency->id],
+            'name' => ['required', 'string', 'max:100', 'unique:agencies,name,' . $agency->id],
         ]);
 
         $agency->update($data);
@@ -82,7 +82,7 @@ class AgencyController extends Controller
     }
 
     /**
-     * Supprime une agence.
+     * Suppression.
      *
      * @param  Agency  $agency
      * @return RedirectResponse

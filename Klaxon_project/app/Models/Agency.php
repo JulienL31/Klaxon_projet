@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property int    $id
  * @property string $name
- *
- * @property-read \Illuminate\Support\Collection<int, Trip> $tripsFrom
- * @property-read \Illuminate\Support\Collection<int, Trip> $tripsTo
  */
 class Agency extends Model
 {
@@ -25,7 +22,7 @@ class Agency extends Model
     /**
      * Trajets partant de cette agence.
      *
-     * @return HasMany<Trip>
+     * @return HasMany
      */
     public function tripsFrom(): HasMany
     {
@@ -35,7 +32,7 @@ class Agency extends Model
     /**
      * Trajets arrivant à cette agence.
      *
-     * @return HasMany<Trip>
+     * @return HasMany
      */
     public function tripsTo(): HasMany
     {

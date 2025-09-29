@@ -6,22 +6,22 @@ use App\Models\Trip;
 use Illuminate\Contracts\View\View;
 
 /**
- * Contrôleur de la page d'accueil publique.
- * Affiche les trajets futurs avec places disponibles, triés par départ croissant.
+ * Accueil public : trajets à venir avec places disponibles.
  */
 class HomeController extends Controller
 {
     /**
-     * Liste des trajets à afficher sur l'accueil.
+     * Liste à afficher sur l'accueil.
      *
      * @return View
      */
     public function index(): View
     {
-        $trips = Trip::with(['from','to','author'])
-            ->upcoming()
-            ->withFreeSeats()
-            ->ordered()
+        $trips = Trip::query()
+            ->with(['from', 'to', 'author'])
+            ->where('departure_at', '>', now())
+            ->where('seats_free', '>', 0)
+            ->orderBy('departure_at', 'asc')
             ->get();
 
         return view('home.index', compact('trips'));

@@ -2,15 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Modèle Trip (trajet inter-agences).
+ *
+ * @property int                             $id
+ * @property int                             $agency_from_id
+ * @property int                             $agency_to_id
+ * @property \Illuminate\Support\Carbon|null $departure_at
+ * @property \Illuminate\Support\Carbon|null $arrival_at
+ * @property int                             $seats_total
+ * @property int                             $seats_free
+ * @property int                             $author_id
+ * @property string|null                     $contact_name
+ * @property string|null                     $contact_email
+ * @property string|null                     $contact_phone
+ */
 class Trip extends Model
 {
     use HasFactory;
 
+    /** @var array<int, string> */
     protected $fillable = [
         'agency_from_id',
         'agency_to_id',
@@ -19,66 +35,80 @@ class Trip extends Model
         'seats_total',
         'seats_free',
         'author_id',
-
-        // ⬇️ pour la modale "détails" et la fiche trajet
         'contact_name',
         'contact_email',
         'contact_phone',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'departure_at' => 'datetime',
         'arrival_at'   => 'datetime',
     ];
 
-    /** @return BelongsTo<Agency, Trip> */
+    /**
+     * Agence de départ.
+     *
+     * @return BelongsTo
+     */
     public function from(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_from_id');
     }
 
-    /** @return BelongsTo<Agency, Trip> */
+    /**
+     * Agence d'arrivée.
+     *
+     * @return BelongsTo
+     */
     public function to(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_to_id');
     }
 
-    /** @return BelongsTo<User, Trip> */
+    /**
+     * Auteur du trajet.
+     *
+     * @return BelongsTo
+     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
     /**
-     * Scope: trajets futurs uniquement.
+     * Scope : trajets futurs uniquement.
      *
-     * @param  Builder<Trip>  $q
-     * @return Builder<Trip>
+     * @param  EloquentBuilder  $q
+     * @return EloquentBuilder
      */
-    public function scopeUpcoming(Builder $q): Builder
+    public function scopeUpcoming(EloquentBuilder $q): EloquentBuilder
     {
-        return $q->where('departure_at', '>', now());
+        $q->where('departure_at', '>', now());
+        return $q;
     }
 
     /**
-     * Scope: trajets avec places libres.
+     * Scope : trajets avec places libres.
      *
-     * @param  Builder<Trip>  $q
-     * @return Builder<Trip>
+     * @param  EloquentBuilder  $q
+     * @return EloquentBuilder
      */
-    public function scopeWithFreeSeats(Builder $q): Builder
+    public function scopeWithFreeSeats(EloquentBuilder $q): EloquentBuilder
     {
-        return $q->where('seats_free', '>', 0);
+        $q->where('seats_free', '>', 0);
+        return $q;
     }
 
     /**
-     * Scope: ordre par date de départ croissante.
+     * Scope : tri par date de départ croissante.
      *
-     * @param  Builder<Trip>  $q
-     * @return Builder<Trip>
+     * @param  EloquentBuilder  $q
+     * @return EloquentBuilder
      */
-    public function scopeOrdered(Builder $q): Builder
+    public function scopeOrdered(EloquentBuilder $q): EloquentBuilder
     {
-        return $q->orderBy('departure_at', 'asc');
+        $q->orderBy('departure_at', 'asc');
+        return $q;
     }
 }
