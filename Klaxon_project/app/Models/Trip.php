@@ -42,70 +42,48 @@ class Trip extends Model
 
     /** @var array<string, string> */
     protected $casts = [
-        'departure_at' => 'datetime',
-        'arrival_at'   => 'datetime',
+        'departure_at'   => 'datetime',
+        'arrival_at'     => 'datetime',
+        'seats_total'    => 'integer',
+        'seats_free'     => 'integer',
+        'agency_from_id' => 'integer',
+        'agency_to_id'   => 'integer',
+        'author_id'      => 'integer',
     ];
 
-    /**
-     * Agence de départ.
-     *
-     * @return BelongsTo
-     */
+    /** @return BelongsTo */
     public function from(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_from_id');
     }
 
-    /**
-     * Agence d'arrivée.
-     *
-     * @return BelongsTo
-     */
+    /** @return BelongsTo */
     public function to(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_to_id');
     }
 
-    /**
-     * Auteur du trajet.
-     *
-     * @return BelongsTo
-     */
+    /** @return BelongsTo */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /**
-     * Scope : trajets futurs uniquement.
-     *
-     * @param  EloquentBuilder  $q
-     * @return EloquentBuilder
-     */
+    /** @return EloquentBuilder */
     public function scopeUpcoming(EloquentBuilder $q): EloquentBuilder
     {
         $q->where('departure_at', '>', now());
         return $q;
     }
 
-    /**
-     * Scope : trajets avec places libres.
-     *
-     * @param  EloquentBuilder  $q
-     * @return EloquentBuilder
-     */
+    /** @return EloquentBuilder */
     public function scopeWithFreeSeats(EloquentBuilder $q): EloquentBuilder
     {
         $q->where('seats_free', '>', 0);
         return $q;
     }
 
-    /**
-     * Scope : tri par date de départ croissante.
-     *
-     * @param  EloquentBuilder  $q
-     * @return EloquentBuilder
-     */
+    /** @return EloquentBuilder */
     public function scopeOrdered(EloquentBuilder $q): EloquentBuilder
     {
         $q->orderBy('departure_at', 'asc');

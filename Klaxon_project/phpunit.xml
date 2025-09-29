@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -12,26 +13,27 @@
             <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
     </testsuites>
+
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./app</directory>
         </include>
     </coverage>
+
     <php>
-    <env name="APP_ENV" value="testing"/>
-    <env name="BCRYPT_ROUNDS" value="4"/>
-    <env name="CACHE_DRIVER" value="array"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="MAIL_MAILER" value="array"/>
 
-    <!-- Activer SQLite en mémoire pour les tests -->
-    <env name="DB_CONNECTION" value="sqlite"/>
-    <env name="DB_DATABASE" value=":memory:"/>
-    
-    <!-- Optionnel mais recommandé : forcer les FK SQLite -->
-    <env name="DB_FOREIGN_KEYS" value="true"/>
+        <!-- Base de données SQLite en mémoire pour des tests rapides et isolés -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_FOREIGN_KEYS" value="true"/>
 
-    <env name="MAIL_MAILER" value="array"/>
-    <env name="QUEUE_CONNECTION" value="sync"/>
-    <env name="SESSION_DRIVER" value="array"/>
-    <env name="TELESCOPE_ENABLED" value="false"/>
-</php>
+        <!-- Désactive Telescope en tests si présent -->
+        <env name="TELESCOPE_ENABLED" value="false"/>
+    </php>
 </phpunit>

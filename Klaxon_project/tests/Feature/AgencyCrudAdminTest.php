@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class AgencyCrudTest extends TestCase
+class AgencyCrudAdminTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -50,10 +50,7 @@ class AgencyCrudTest extends TestCase
         // Update
         $res = $this->put(route('admin.agencies.update', $agency), ['name' => 'Bordeaux Centre']);
         $res->assertRedirect(route('admin.agencies.index'));
-        $this->assertDatabaseHas('agencies', [
-            'id'   => $agency->id,
-            'name' => 'Bordeaux Centre',
-        ]);
+        $this->assertDatabaseHas('agencies', ['id' => $agency->id, 'name' => 'Bordeaux Centre']);
 
         // Delete
         $res = $this->delete(route('admin.agencies.destroy', $agency));

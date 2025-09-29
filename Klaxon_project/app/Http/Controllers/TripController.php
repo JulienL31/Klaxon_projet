@@ -12,12 +12,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Gestion des trajets côté utilisateur.
+ * Contrôleur des trajets (côté utilisateurs authentifiés).
  */
 class TripController extends Controller
 {
     /**
-     * Auth requis pour les actions d'écriture.
+     * Auth requis pour les opérations d'écriture.
      */
     public function __construct()
     {
@@ -25,9 +25,7 @@ class TripController extends Controller
     }
 
     /**
-     * Formulaire de création.
-     *
-     * @return View
+     * Formulaire de création d'un trajet.
      */
     public function create(): View
     {
@@ -37,10 +35,7 @@ class TripController extends Controller
     }
 
     /**
-     * Enregistre un trajet.
-     *
-     * @param  Request  $request
-     * @return RedirectResponse
+     * Enregistre un nouveau trajet.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -55,37 +50,38 @@ class TripController extends Controller
             'seats_free'     => ['required', 'integer', 'min:0', 'lte:seats_total'],
         ]);
 
-        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'] . ' ' . $validated['departure_time'])->seconds(0);
-        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'] . ' ' . $validated['arrival_time'])->seconds(0);
+        // Construit des DateTime complets (secondes à 0 pour cohérence).
+        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])->seconds(0);
+        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])->seconds(0);
 
+        // Contrôle supplémentaire : on ne peut pas arriver avant (ou au même instant que) le départ.
+        if ($arrival->lte($departure)) {
+            return back()
+                ->withErrors(['arrival_time' => 'L’heure d’arrivée doit être postérieure à l’heure de départ.'])
+                ->withInput();
+        }
+
+        /** @var AppUser|null $user */
         $user = Auth::user();
-        $authorId = Auth::id();
-        $contactName  = $user instanceof AppUser ? $user->name  : null;
-        $contactEmail = $user instanceof AppUser ? $user->email : null;
-        $contactPhone = $user instanceof AppUser ? $user->phone : null;
 
-        $trip = new Trip([
+        Trip::create([
             'agency_from_id' => $validated['agency_from_id'],
             'agency_to_id'   => $validated['agency_to_id'],
             'departure_at'   => $departure,
             'arrival_at'     => $arrival,
             'seats_total'    => $validated['seats_total'],
             'seats_free'     => $validated['seats_free'],
-            'author_id'      => $authorId,
-            'contact_name'   => $contactName,
-            'contact_email'  => $contactEmail,
-            'contact_phone'  => $contactPhone,
+            'author_id'      => (int) Auth::id(),
+            'contact_name'   => $user?->name,
+            'contact_email'  => $user?->email,
+            'contact_phone'  => $user?->phone,
         ]);
-        $trip->save();
 
         return redirect()->route('home')->with('status', 'Trajet créé avec succès.');
     }
 
     /**
-     * Formulaire d'édition.
-     *
-     * @param  Trip  $trip
-     * @return View
+     * Formulaire d’édition d’un trajet existant.
      */
     public function edit(Trip $trip): View
     {
@@ -97,11 +93,7 @@ class TripController extends Controller
     }
 
     /**
-     * Mise à jour d'un trajet.
-     *
-     * @param  Request  $request
-     * @param  Trip     $trip
-     * @return RedirectResponse
+     * Met à jour un trajet.
      */
     public function update(Request $request, Trip $trip): RedirectResponse
     {
@@ -118,8 +110,14 @@ class TripController extends Controller
             'seats_free'     => ['required', 'integer', 'min:0', 'lte:seats_total'],
         ]);
 
-        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'] . ' ' . $validated['departure_time'])->seconds(0);
-        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'] . ' ' . $validated['arrival_time'])->seconds(0);
+        $departure = Carbon::createFromFormat('Y-m-d H:i', $validated['departure_date'].' '.$validated['departure_time'])->seconds(0);
+        $arrival   = Carbon::createFromFormat('Y-m-d H:i', $validated['arrival_date'].' '.$validated['arrival_time'])->seconds(0);
+
+        if ($arrival->lte($departure)) {
+            return back()
+                ->withErrors(['arrival_time' => 'L’heure d’arrivée doit être postérieure à l’heure de départ.'])
+                ->withInput();
+        }
 
         $trip->update([
             'agency_from_id' => $validated['agency_from_id'],
@@ -134,10 +132,7 @@ class TripController extends Controller
     }
 
     /**
-     * Suppression d'un trajet.
-     *
-     * @param  Trip  $trip
-     * @return RedirectResponse
+     * Supprime un trajet.
      */
     public function destroy(Trip $trip): RedirectResponse
     {
@@ -149,18 +144,16 @@ class TripController extends Controller
     }
 
     /**
-     * Autorise si admin ou auteur.
-     *
-     * @param  Trip  $trip
-     * @return void
+     * Autorisation : admin ou auteur du trajet.
      */
     private function authorizeAuthorOrAdmin(Trip $trip): void
     {
-        $user = Auth::user();
-        $userId = $user instanceof AppUser ? $user->id : null;
-        $role   = $user instanceof AppUser ? ($user->role ?? 'user') : 'user';
+        /** @var AppUser|null $user */
+        $user   = Auth::user();
+        $userId = $user?->id ? (int) $user->id : 0;
+        $role   = (string) ($user?->role ?? 'user');
 
-        if ($role !== 'admin' && $trip->author_id !== $userId) {
+        if ($role !== 'admin' && (int) $trip->author_id !== $userId) {
             abort(403, 'Non autorisé.');
         }
     }
