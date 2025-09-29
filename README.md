@@ -131,7 +131,3 @@ Tests couvrent a minima les **opérations d’écriture DB** (création, mise à
 - **Téléphone** : champ **`users.phone`** ajouté, normalisé côté modèle et affiché (modal & panneau infos).
 
 ---
-
-## 9) Licence
-
-Projet d’exercice étudiant.
