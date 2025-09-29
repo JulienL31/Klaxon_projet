@@ -5,7 +5,7 @@
 
 ---
 
-## 1) Objectif (selon l’énoncé)
+## 1) Objectif
 
 - Accueil **public** : liste des trajets **à venir**, triés par **date de départ croissante**, **uniquement** ceux avec des **places disponibles**.  
 - Après **connexion** :
@@ -107,7 +107,7 @@ vendor/bin/phpstan analyse --memory-limit=1G
 ```bash
 vendor/bin/phpunit
 ```
-Statut actuel : **OK (12 tests, 40 assertions)**.
+Statut actuel : **OK**.
 
 Tests couvrent a minima les **opérations d’écriture DB** (création, mise à jour, suppression de trajets).
 
