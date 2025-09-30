@@ -52,15 +52,10 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### Option A — Fichiers SQL fournis (recommandé)
+### Fichiers SQL fournis
 Importer **dans votre base** :
 - `database/schema/klaxon_users_seed.sql` (création des users)
 - `database/seeders/DB_klaxon.sql` (création de la DB)
-
-### Option B — Migrations/seeders Laravel
-```bash
-php artisan migrate --seed
-```
 
 ---
 
