@@ -34,7 +34,7 @@ Techno imposées : PHP (Laravel 9 – MVC), MySQL/MariaDB, **Bootstrap + Sass**,
 ## 3) Installation
 
 ```bash
-git clone <URL_DU_DEPOT>
+git clone <https://github.com/JulienL31/Klaxon_projet>
 cd Klaxon_project
 composer install
 npm install
@@ -54,8 +54,8 @@ DB_PASSWORD=
 
 ### Option A — Fichiers SQL fournis (recommandé)
 Importer **dans votre base** :
-- `database/schema/mysql-schema.sql` (création des tables)
-- `database/seeders/seed_data.sql` (jeu d’essai)
+- `database/schema/klaxon_users_seed.sql` (création des users)
+- `database/seeders/DB_klaxon.sql` (création de la DB)
 
 ### Option B — Migrations/seeders Laravel
 ```bash

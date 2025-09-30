@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
@@ -25,8 +26,8 @@ class AdminController extends Controller
         ];
 
         $trips = Trip::query()
-            ->with(['from', 'to', 'author'])   // adapte les relations si nécessaire
-            ->orderBy('departure_date')        // ou ->latest('departure_date')
+            ->with(['from', 'to', 'author'])   
+            ->orderBy('departure_at', 'asc')   
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
