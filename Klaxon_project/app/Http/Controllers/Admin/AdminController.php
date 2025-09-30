@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
@@ -8,24 +9,30 @@ use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 
-/**
- * Tableau de bord administrateur.
- */
 class AdminController extends Controller
 {
+    private const PER_PAGE = 15;
+
     /**
-     * Page d'accueil de l'admin.
-     *
-     * @return View
+     * Dashboard admin.
      */
     public function index(): View
     {
         $counts = [
-            'users'    => User::query()->count(),
-            'agencies' => Agency::query()->count(),
-            'trips'    => Trip::query()->count(),
+            'users'    => User::count(),
+            'agencies' => Agency::count(),
+            'trips'    => Trip::count(),
         ];
 
-        return view('admin.index', compact('counts'));
+        $trips = Trip::query()
+            ->with(['from', 'to', 'author'])   // adapte les relations si nécessaire
+            ->orderBy('departure_date')        // ou ->latest('departure_date')
+            ->paginate(self::PER_PAGE)
+            ->withQueryString();
+
+        return view('admin.index', [
+            'counts' => $counts,
+            'trips'  => $trips,
+        ]);
     }
 }
