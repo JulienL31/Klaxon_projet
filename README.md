@@ -42,15 +42,6 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configurer la base dans `.env` (ex.) :
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=klaxon
-DB_USERNAME=root
-DB_PASSWORD=
-```
 
 ### Fichiers SQL fournis
 Importer **dans votre base** :
