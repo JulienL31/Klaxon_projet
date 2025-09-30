@@ -11,21 +11,21 @@
   @endif
 
   @php
-    // On part de la BDD (departure_at / arrival_at), avec filet de sécurité
-    $dep   = $trip->departure_at;
-    $arr   = $trip->arrival_at;
-
-    $depDate = old('departure_date', $dep?->format('Y-m-d'));
-    $depTime = old('departure_time', $dep?->format('H:i'));
-    $arrDate = old('arrival_date',   $arr?->format('Y-m-d'));
-    $arrTime = old('arrival_time',   $arr?->format('H:i'));
+    // Formats HTML5 pour <input type="datetime-local">
+    $depLocal = old('departure_at', optional($trip->departure_at)->format('Y-m-d\TH:i'));
+    $arrLocal = old('arrival_at',   optional($trip->arrival_at)->format('Y-m-d\TH:i'));
   @endphp
 
   <div class="row g-4">
     <div class="col-md-7">
-      <form method="POST" action="{{ route('trips.update', $trip) }}" class="bg-white p-3 p-md-4 border rounded-3">
+      <form method="POST" action="{{ route('trips.update', $trip) }}" class="bg-white p-3 p-md-4 border rounded-3" novalidate>
         @csrf
         @method('PUT')
+
+        {{-- On verrouille l’auteur au besoin (facultatif : le controller gère déjà) --}}
+        @auth
+          <input type="hidden" name="author_id" value="{{ old('author_id', $trip->author_id ?? auth()->id()) }}">
+        @endauth
 
         <div class="row g-3">
           {{-- Agences --}}
@@ -34,8 +34,7 @@
             <select id="agency_from_id" name="agency_from_id" class="form-select" required>
               <option value="">— Sélectionner —</option>
               @foreach($agencies as $a)
-                <option value="{{ $a->id }}"
-                  @selected(old('agency_from_id', $trip->agency_from_id) == $a->id)>{{ $a->name }}</option>
+                <option value="{{ $a->id }}" @selected(old('agency_from_id', $trip->agency_from_id) == $a->id)>{{ $a->name }}</option>
               @endforeach
             </select>
             @error('agency_from_id') <div class="text-danger small">{{ $message }}</div> @enderror
@@ -46,56 +45,111 @@
             <select id="agency_to_id" name="agency_to_id" class="form-select" required>
               <option value="">— Sélectionner —</option>
               @foreach($agencies as $a)
-                <option value="{{ $a->id }}"
-                  @selected(old('agency_to_id', $trip->agency_to_id) == $a->id)>{{ $a->name }}</option>
+                <option value="{{ $a->id }}" @selected(old('agency_to_id', $trip->agency_to_id) == $a->id)>{{ $a->name }}</option>
               @endforeach
             </select>
             @error('agency_to_id') <div class="text-danger small">{{ $message }}</div> @enderror
           </div>
 
-          {{-- Dates / heures --}}
+          {{-- Datetimes (alignés avec TripController) --}}
           <div class="col-md-6">
-            <label for="departure_date" class="form-label">Date de départ</label>
-            <input id="departure_date" type="date" name="departure_date" class="form-control"
-                   value="{{ $depDate }}" required>
-            @error('departure_date') <div class="text-danger small">{{ $message }}</div> @enderror
+            <label for="departure_at" class="form-label">Départ (date & heure)</label>
+            <input
+              id="departure_at"
+              type="datetime-local"
+              name="departure_at"
+              class="form-control"
+              value="{{ $depLocal }}"
+              required
+            >
+            @error('departure_at') <div class="text-danger small">{{ $message }}</div> @enderror
           </div>
 
           <div class="col-md-6">
-            <label for="departure_time" class="form-label">Heure de départ</label>
-            <input id="departure_time" type="time" name="departure_time" class="form-control"
-                   value="{{ $depTime }}" required>
-            @error('departure_time') <div class="text-danger small">{{ $message }}</div> @enderror
-          </div>
-
-          <div class="col-md-6">
-            <label for="arrival_date" class="form-label">Date d’arrivée</label>
-            <input id="arrival_date" type="date" name="arrival_date" class="form-control"
-                   value="{{ $arrDate }}" required>
-            @error('arrival_date') <div class="text-danger small">{{ $message }}</div> @enderror
-          </div>
-
-          <div class="col-md-6">
-            <label for="arrival_time" class="form-label">Heure d’arrivée</label>
-            <input id="arrival_time" type="time" name="arrival_time" class="form-control"
-                   value="{{ $arrTime }}" required>
-            @error('arrival_time') <div class="text-danger small">{{ $message }}</div> @enderror
+            <label for="arrival_at" class="form-label">Arrivée (date & heure)</label>
+            <input
+              id="arrival_at"
+              type="datetime-local"
+              name="arrival_at"
+              class="form-control"
+              value="{{ $arrLocal }}"
+              required
+            >
+            @error('arrival_at') <div class="text-danger small">{{ $message }}</div> @enderror
+            <div class="form-text">Doit être postérieure au départ.</div>
           </div>
 
           {{-- Places --}}
           <div class="col-md-6">
             <label for="seats_total" class="form-label">Nombre total de places</label>
-            <input id="seats_total" type="number" min="1" step="1" name="seats_total" class="form-control"
-                   value="{{ old('seats_total', $trip->seats_total) }}" required>
+            <input
+              id="seats_total"
+              type="number"
+              min="1"
+              step="1"
+              name="seats_total"
+              class="form-control"
+              value="{{ old('seats_total', $trip->seats_total) }}"
+              required
+            >
             @error('seats_total') <div class="text-danger small">{{ $message }}</div> @enderror
           </div>
 
           <div class="col-md-6">
             <label for="seats_free" class="form-label">Places disponibles</label>
-            <input id="seats_free" type="number" min="0" step="1" name="seats_free" class="form-control"
-                   value="{{ old('seats_free', $trip->seats_free) }}" required>
+            <input
+              id="seats_free"
+              type="number"
+              min="0"
+              step="1"
+              name="seats_free"
+              class="form-control"
+              value="{{ old('seats_free', $trip->seats_free) }}"
+              required
+            >
             @error('seats_free') <div class="text-danger small">{{ $message }}</div> @enderror
             <div class="form-text">Ne peut pas dépasser le nombre total de places.</div>
+          </div>
+
+          {{-- Coordonnées de contact (optionnelles) --}}
+          <div class="col-md-6">
+            <label for="contact_name" class="form-label">Nom du contact</label>
+            <input
+              id="contact_name"
+              type="text"
+              name="contact_name"
+              class="form-control"
+              value="{{ old('contact_name', $trip->contact_name ?? $trip->author->name ?? auth()->user()->name ?? '') }}"
+              maxlength="255"
+            >
+            @error('contact_name') <div class="text-danger small">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="col-md-6">
+            <label for="contact_email" class="form-label">Email de contact</label>
+            <input
+              id="contact_email"
+              type="email"
+              name="contact_email"
+              class="form-control"
+              value="{{ old('contact_email', $trip->contact_email ?? $trip->author->email ?? auth()->user()->email ?? '') }}"
+              maxlength="255"
+            >
+            @error('contact_email') <div class="text-danger small">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="col-12">
+            <label for="contact_phone" class="form-label">Téléphone de contact</label>
+            <input
+              id="contact_phone"
+              type="tel"
+              name="contact_phone"
+              class="form-control"
+              placeholder="+33 6 12 34 56 78"
+              value="{{ old('contact_phone', $trip->contact_phone ?? $trip->author->phone ?? auth()->user()->phone ?? '') }}"
+              maxlength="50"
+            >
+            @error('contact_phone') <div class="text-danger small">{{ $message }}</div> @enderror
           </div>
         </div>
 
@@ -112,18 +166,18 @@
         <h6 class="mb-3">Informations du contact</h6>
         <p class="mb-1"><strong>Nom :</strong> {{ $trip->author?->name ?? auth()->user()->name }}</p>
         <p class="mb-1"><strong>Email :</strong> {{ $trip->author?->email ?? auth()->user()->email }}</p>
-        <p class="mb-0"><strong>Téléphone :</strong> {{ $trip->author?->phone ?? auth()->user()->phone ?? '—' }}</p>
+        <p class="mb-0"><strong>Téléphone :</strong> {{ $trip->contact_phone ?? $trip->author?->phone ?? auth()->user()->phone ?? '—' }}</p>
       </div>
     </div>
   </div>
 
-  {{-- JS : seats_free <= seats_total + arrivée >= départ (date) --}}
+  {{-- JS : seats_free <= seats_total + arrivée >= départ --}}
   <script>
     (function () {
       const total = document.getElementById('seats_total');
       const free  = document.getElementById('seats_free');
-      const depD  = document.getElementById('departure_date');
-      const arrD  = document.getElementById('arrival_date');
+      const dep   = document.getElementById('departure_at');
+      const arr   = document.getElementById('arrival_at');
 
       function syncSeats() {
         const max = parseInt(total.value || '0', 10);
@@ -136,17 +190,18 @@
       }
 
       function syncArrivalMin() {
-        if (depD.value) {
-          arrD.min = depD.value;
-          if (arrD.value && arrD.value < depD.value) arrD.value = depD.value;
+        if (dep?.value) {
+          arr.min = dep.value;
+          if (arr.value && arr.value < dep.value) arr.value = dep.value;
         } else {
-          arrD.removeAttribute('min');
+          arr.removeAttribute('min');
         }
       }
 
       total?.addEventListener('input', syncSeats);
-      depD?.addEventListener('change', syncArrivalMin);
+      dep?.addEventListener('change', syncArrivalMin);
 
+      // init
       syncSeats();
       syncArrivalMin();
     })();

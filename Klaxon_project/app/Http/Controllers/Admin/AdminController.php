@@ -20,16 +20,17 @@ class AdminController extends Controller
     public function index(): View
     {
         $counts = [
-            'users'    => User::count(),
-            'agencies' => Agency::count(),
-            'trips'    => Trip::count(),
+            'users'    => User::query()->count(),
+            'agencies' => Agency::query()->count(),
+            'trips'    => Trip::query()->count(),
         ];
 
         $trips = Trip::query()
-            ->with(['from', 'to', 'author'])   
-            ->orderBy('departure_at', 'asc')   
-            ->paginate(self::PER_PAGE)
-            ->withQueryString();
+            ->with(['from', 'to', 'author'])
+            ->orderBy('departure_at', 'asc')
+            ->paginate(self::PER_PAGE);
+
+        $trips->appends(request()->query());
 
         return view('admin.index', [
             'counts' => $counts,

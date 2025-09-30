@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\TripController   as AdminTripController;
 |--------------------------------------------------------------------------
 | - Accueil public : trajets futurs avec places > 0
 | - Auth : login (GET/POST) + logout (POST)
-| - Trips (CRUD partiel) : créer / éditer / supprimer (auth requis)
+| - Trips (CRUD partiel) : liste, création, édition, suppression (auth requis)
 | - Admin : dashboard, users, agencies (CRUD), trips (index + delete)
 | - Debug : /__debug accessible uniquement en environnement local
 |--------------------------------------------------------------------------
@@ -30,15 +30,19 @@ Route::middleware('guest')->group(function () {
     Route::get('/login',  [AuthController::class, 'show'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
+
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Trajets - utilisateur connecté (création / édition / suppression)
+// Trajets - utilisateur connecté (liste + création / édition / suppression)
 Route::middleware('auth')->group(function () {
+    Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
+
     Route::resource('trips', TripController::class)
         ->only(['create', 'store', 'edit', 'update', 'destroy']);
     // Noms générés :
+    //  - trips.index    GET    /trips
     //  - trips.create   GET    /trips/create
     //  - trips.store    POST   /trips
     //  - trips.edit     GET    /trips/{trip}/edit
@@ -63,8 +67,7 @@ Route::middleware(['auth','can:admin'])
         Route::get('/trips', [AdminTripController::class, 'index'])->name('trips.index');
         Route::delete('/trips/{trip}', [AdminTripController::class, 'destroy'])->name('trips.destroy');
 
-        // 👉 Ajout : URL conviviale /admin/trips/create
-        // Redirige simplement vers la création standard /trips/create
+        // 👉 URL conviviale /admin/trips/create qui redirige vers la création standard
         Route::get('/trips/create', fn () => redirect()->route('trips.create'))
             ->name('trips.create');
     });
@@ -80,7 +83,7 @@ if (app()->environment('local')) {
                 'agencies'     => DB::table('agencies')->count(),
                 'trips'        => DB::table('trips')->count(),
                 'trips_future' => DB::table('trips')
-                    ->where('departure_dt', '>', now())
+                    ->where('departure_at', '>', now())
                     ->where('seats_free', '>', 0)
                     ->count(),
             ];
@@ -88,7 +91,7 @@ if (app()->environment('local')) {
             return response()->json([
                 'db'                => DB::getDatabaseName(),
                 'counts'            => $counts,
-                'first_trip_sample' => DB::table('trips')->orderBy('departure_dt')->first(),
+                'first_trip_sample' => DB::table('trips')->orderBy('departure_at')->first(),
             ]);
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);

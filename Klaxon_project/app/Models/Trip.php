@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -21,6 +23,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null                     $contact_name
  * @property string|null                     $contact_email
  * @property string|null                     $contact_phone
+ *
+ * @property-read \App\Models\Agency         $from
+ * @property-read \App\Models\Agency         $to
+ * @property-read \App\Models\User           $author
+ *
+ * @method static EloquentBuilder|static query()
  */
 class Trip extends Model
 {
@@ -51,42 +59,46 @@ class Trip extends Model
         'author_id'      => 'integer',
     ];
 
-    /** @return BelongsTo */
+    /** Relation : agence de départ. */
     public function from(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_from_id');
     }
 
-    /** @return BelongsTo */
+    /** Relation : agence d’arrivée. */
     public function to(): BelongsTo
     {
         return $this->belongsTo(Agency::class, 'agency_to_id');
     }
 
-    /** @return BelongsTo */
+    /** Relation : auteur (créateur du trajet). */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /** @return EloquentBuilder */
-    public function scopeUpcoming(EloquentBuilder $q): EloquentBuilder
+    /**
+     * Scope : trajets à venir.
+     * Muter le builder puis ne rien retourner (évite les soucis d’inférence PHPStan).
+     */
+    public function scopeUpcoming(EloquentBuilder $q): void
     {
         $q->where('departure_at', '>', now());
-        return $q;
     }
 
-    /** @return EloquentBuilder */
-    public function scopeWithFreeSeats(EloquentBuilder $q): EloquentBuilder
+    /**
+     * Scope : trajets avec places libres.
+     */
+    public function scopeWithFreeSeats(EloquentBuilder $q): void
     {
         $q->where('seats_free', '>', 0);
-        return $q;
     }
 
-    /** @return EloquentBuilder */
-    public function scopeOrdered(EloquentBuilder $q): EloquentBuilder
+    /**
+     * Scope : tri par date de départ croissante.
+     */
+    public function scopeOrdered(EloquentBuilder $q): void
     {
         $q->orderBy('departure_at', 'asc');
-        return $q;
     }
 }
